@@ -24,7 +24,8 @@
 	</head>
 	<body>
 		<div id='error' style='display: none; width: 100%; background-color: yellow;'></div>
-		<div style='width: 100%'>
+		<div style='width: 100%' id='videoParent'>
+		  <span style='z-index: 3000; position: absolute; color: white; font-size: 32px; display: none;' id='timeOverlay'>Time: <span id='time2'></span></span>
 			<div id="videoDiv"></div>
 		</div>
 	<div id='videoInfo' style='display: none;'>
@@ -33,7 +34,10 @@
 		  <span style='float: left;' id='vidTitle'></span>
 	  </div>
 	  <br />
-	  <input type='button' onclick='skipSong()' value='Skip Song' /><br />
+	  <input type='button' onclick='skipSong()' value='Skip Song' />
+	  <input type='button' onclick='unfullscreen()' value='Normal Size' style='display: none;' id='resizeButton' />
+	  <input type='button' onclick='fullscreen()' value='Fullscreen' id='fullscreenButton' /><br />
+
 	  <h3>Add New Song</h3>
 	  <!--<input type='text' id='songID' /><input type='button' onclick='addSong()' value='Add Song' /><br />-->
 	  <input type='text' id='searchQuery' /><input type='button' onclick='search()' value='Search' /><br />

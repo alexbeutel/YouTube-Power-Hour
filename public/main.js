@@ -131,6 +131,7 @@ function resizePlayer(width, height) {
 	var playerObj = document.getElementById("ytPlayer");
 	playerObj.height = height;
 	playerObj.width = width;
+	ytplayer.setSize( width, height);
 }
                     	
 
@@ -156,6 +157,7 @@ function updateTime() {
 	var s= seconds;
 	if(seconds < 10) s = "0" + seconds;
 	amb.$('time').innerHTML = time + ":" + s;
+	amb.$('time2').innerHTML = time + ":" + s;
 	seconds++;
 }
 function startPlaylist() {
@@ -219,13 +221,31 @@ function loadUserPlaylists() {
 
 function loadPlayer(s) {
   var videoID = "ylLzyHk54Z0"
-  var params = { allowScriptAccess: "always", allowFullScreen: 'true'};
-  var atts = { id: "ytPlayer" , allowFullScreen: 'true'};
+  var params = { allowScriptAccess: "always", allowFullScreen: 'true', wmode:'transparent'};
+  var atts = { id: "ytPlayer" , allowFullScreen: 'true', wmode: 'transparent'};
+
   swfobject.embedSWF("http://www.youtube.com/v/" + videoID + 
-  				   "&enablejsapi=1&playerapiid=player1", 
-  				   "videoDiv", s[0], s[1], "8", null, null, params, atts);
+  "&enablejsapi=1&playerapiid=player1", 
+  "videoDiv", s[0], s[1], "8", null, null, params, atts);
 }
+
+
 var sizeParameters = null;
+function fullscreen() {
+	amb.$('timeOverlay').style.display = '';
+	resizePlayer( amb.getWidth()-30, amb.getHeight()-20);
+	amb.$('resizeButton').style.display='';
+	amb.$('fullscreenButton').style.display='none';
+	
+}
+function unfullscreen() {
+	amb.$('timeOverlay').style.display = 'none';
+	sizeParameters = getAppropriateSize();
+	resizePlayer( sizeParameters[0], sizeParameters[1]);
+	amb.$('resizeButton').style.display='none';
+	amb.$('fullscreenButton').style.display='';
+}
+
 function _run() {
 	sizeParameters = getAppropriateSize();
 	loadPlayer(sizeParameters);
