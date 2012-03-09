@@ -19,3 +19,13 @@ TODO
  * Buffer next song - not sure if new [YouTube API](https://developers.google.com/youtube/js_api_reference) `player.cueVideoById` will do this or need to have multiple players that we switch between
  * There are other errors - do power hour and catalog them as they occur
  * Add "Fork me on GitHub Bro" ribbon
+
+
+Long Term TODO's
+===========================
+
+ * Give the site some actual design
+ * Volume normalization if possible
+ * Save playlists
+ * Backend for users/playlists
+ * Playlist generation (Pandora/Spotify-style)
