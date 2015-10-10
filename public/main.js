@@ -20,6 +20,7 @@ function Song(newid, ti, du, th, vi) {
 				amb.$('searchQuery').value = '';
 			}
 		}(this);
+		//console.log(d);
 		return d;
 	}
 }
@@ -35,7 +36,7 @@ function Playlist(nid, ti) {
 		d.innerHTML = this.title;
 		d.id= this.id;
 		d.onclick = function(o) {
-				loadNewPlaylist(o.target.id,1);
+				loadNewPlaylist(o.target.id);
 		};
 		div.appendChild(d);
 		return div;
@@ -74,26 +75,39 @@ var curPlaylist = new Array();
 	var gl;
 var curSong = null;
 var noEmbed = "";
+var lastId = "";
 function addPlaylist(json) {
 	gl = json;
-	var it = json['data']['items'];
+	console.log(json);
+	var it = json['items'];
 	for(var i = 0; i < it.length; i++) {
-		var s1 = it[i]['video'];
-		var th = (s1['thumbnail']) ? s1['thumbnail']['hqDefault'] : '';
-		var S = new Song(s1['id'], s1['title'], s1['duration'], th);
-		if(s1['accessControl'] && s1['accessControl']['embed'] == 'allowed' ) {
-			curPlaylist.push(S);
-		} else {
-			noEmbed += s1['title'] + ", ";
-		}
+		var s1 = it[i]['snippet'];
+		var title = s1['title'];
+		var vid = s1['resourceId']['videoId'];
+		var th = (s1['thumbnails']) ? s1['thumbnails']['default']['url'] : '';
+		var S = new Song(vid, title, 150, th);
+		curPlaylist.push(S);
+		//var th = (s1['thumbnail']) ? s1['thumbnail']['hqDefault'] : '';
+		//var S = new Song(s1['id'], s1['title'], s1['duration'], th);
+		//if(s1['accessControl'] && s1['accessControl']['embed'] == 'allowed' ) {
+			//curPlaylist.push(S);
+		//} else {
+			//noEmbed += s1['title'] + ", ";
+		//}
 	}
 
-	if(json['data']['totalItems'] > json['data']['startIndex'] + 50)
-		loadNewPlaylist(json['data']['id'],json['data']['startIndex']+51);
-	else{
+	if(json['nextPageToken']) {
+		loadNewPlaylist(lastId,json['nextPageToken']);
+	} else {
 		error("Embed disabled on " + noEmbed);
 		startPlaylist();
 	}
+	//if(json['data']['totalItems'] > json['data']['startIndex'] + 50)
+		//loadNewPlaylist(json['data']['id'],json['data']['startIndex']+51);
+	//else{
+		//error("Embed disabled on " + noEmbed);
+		//startPlaylist();
+	//}
 	
 }
 
@@ -135,21 +149,33 @@ function resizePlayer(width, height) {
 }
                     	
 
+var totalViewed = 0;
 function nextSong() {
 	setTimeout('nextSong()', 60000);
+	//setTimeout('nextSong()', 6000);
 	time++;
 	seconds = 0;
 	skipSong();
 }
 
 function skipSong() {
-	var s = curPlaylist.pop();
-	curSong = s;
-    amb.$('vidTitle').innerHTML = s.title;
-	if(ytplayer) {
-		var t = amb.rand(10, s.duration-70);
-		ytplayer.loadVideoById(s.id,t, defaultSize);
-		if(ytplayer.getPlayerState() != 1) ytplayer.playVideo();
+	if(curPlaylist.length > 0) {
+		var s = curPlaylist.pop();
+		curSong = s;
+		amb.$('vidTitle').innerHTML = s.title;
+		if(ytplayer) {
+			var t = amb.rand(10, s.duration-70);
+			ytplayer.loadVideoById(s.id,t, defaultSize);
+			if(ytplayer.getPlayerState() != 1) {
+				ytplayer.playVideo();
+				totalViewed++;
+				if (totalViewed % 5 == 0) {
+					console.log(totalViewed);
+				}
+			}
+		}
+	} else {
+		console.log("Total = " + totalViewed);
 	}
 }
 
@@ -182,24 +208,33 @@ function addSong() {
 }
 
 function searchCallback(json) {
-	var it = json['data']['items'];
+	console.log(json);
+	var it = json['items'];
 	for(var i = 0; i < it.length; i++) {
 		var s1 = it[i];
-		var th = (s1['thumbnail']) ? s1['thumbnail']['hqDefault'] : '';
-		var S = new Song(s1['id'], s1['title'], s1['duration'], th);
-		if(s1['accessControl'] && s1['accessControl']['embed'] == 'allowed') {
-			amb.$('lists2').appendChild(S.getListItem());
-		}
+		var th = (s1['snippet']['thumbnails']) ? s1['snippet']['thumbnails']['default']['url'] : '';
+		var S = new Song(s1['id']['videoId'], s1['snippet']['title'], 150, th);
+		//if(s1['accessControl'] && s1['accessControl']['embed'] == 'allowed') {
+		amb.$('lists2').appendChild(S.getListItem());
+			//}
 	}
 }
 function search() {
-	var url ='http://gdata.youtube.com/feeds/api/videos?q=' + amb.$('searchQuery').value + '&v=2&alt=jsonc&callback=searchCallback&max-results=10';
+	//var url ='http://gdata.youtube.com/feeds/api/videos?q=' + amb.$('searchQuery').value + '&v=2&alt=jsonc&callback=searchCallback&max-results=10';
+	//'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=britney+spears&type=video&videoEmbeddable=true&key='
+	var url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=' + amb.$('searchQuery').value + '&type=video&videoEmbeddable=true&key=AIzaSyCONCDofhD3weS3rw4wpxHI1rxgAfjyLDc&callback=searchCallback'
+	console.log(url);
 	amb.addScript(url);
 }
 
 
 function loadNewPlaylist(id,start) {
-	var url = 'http://gdata.youtube.com/feeds/api/playlists/'+id+'?v=2&alt=jsonc&callback=addPlaylist&max-results=50&start-index='+start;
+	//var url = 'http://gdata.youtube.com/feeds/api/playlists/'+id+'?v=2&alt=jsonc&callback=addPlaylist&max-results=50&start-index='+start;
+	var url = 'https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails,snippet&maxResults=50&playlistId=' + id +'&key=AIzaSyCONCDofhD3weS3rw4wpxHI1rxgAfjyLDc&callback=addPlaylist'
+	if(start)
+		url += "&pageToken="+start;
+	lastId = id;
+	console.log(url);
 	amb.addScript(url);
 }
 
